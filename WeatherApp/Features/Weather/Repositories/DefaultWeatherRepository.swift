@@ -22,4 +22,15 @@ final class DefaultWeatherRepository: WeatherRepository {
             forCity: city
         )
     }
+    
+    func fetchWeather(
+        latitude: Double,
+        longitude: Double
+    ) async throws -> Weather {
+
+        try await remoteDataSource.fetchWeather(
+            latitude: latitude,
+            longitude: longitude
+        )
+    }
 }

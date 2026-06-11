@@ -40,7 +40,8 @@ final class WeatherSearchViewController: UIViewController {
         setupUI()
         bindViewModel()
         showIdleState()
-        viewModel.loadLastSearchedCityIfAvailable()
+        //viewModel.loadLastSearchedCityIfAvailable()
+        viewModel.requestCurrentLocationWeather()
     }
 
     private func setupUI() {

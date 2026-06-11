@@ -12,6 +12,7 @@ final class WeatherContainer {
 
         let localStorage = UserDefaultsWeatherLocalStorage()
         let remoteDataSource = OpenWeatherRemoteDataSource()
+        let locationService = CoreLocationService()
 
         let repository = DefaultWeatherRepository(
             remoteDataSource: remoteDataSource
@@ -19,7 +20,8 @@ final class WeatherContainer {
 
         let viewModel = WeatherSearchViewModel(
             repository: repository,
-            localStorage: localStorage
+            localStorage: localStorage,
+            locationService: locationService
         )
 
         return WeatherSearchViewController(
