@@ -30,9 +30,28 @@ final class OpenWeatherRemoteDataSource: RemoteWeatherDataSource {
             from: url
         )
 
-        if let httpResponse = response as? HTTPURLResponse {
-            print("Status code:", httpResponse.statusCode)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw WeatherError.invalidResponse
         }
+
+        switch httpResponse.statusCode {
+
+        case 200:
+            break
+
+        case 401:
+            throw WeatherError.invalidAPIKey
+
+        case 404:
+            throw WeatherError.cityNotFound
+
+        case 500...599:
+            throw WeatherError.serverError
+
+        default:
+            throw WeatherError.invalidResponse
+        }
+        
 
         if let rawJSON = String(data: data, encoding: .utf8) {
             print("Raw response:", rawJSON)

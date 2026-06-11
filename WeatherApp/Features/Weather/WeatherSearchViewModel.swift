@@ -47,10 +47,22 @@ final class WeatherSearchViewModel {
                 )
                 state = .loaded(weather)
            
-            } catch {
+            } catch let error as LocalizedError {
+
                 print("Weather fetch error:", error)
-                state = .error(error.localizedDescription)
-            
+
+                state = .error(
+                    error.errorDescription ??
+                    "Unknown error"
+                )
+
+            } catch {
+
+                print("Weather fetch error:", error)
+
+                state = .error(
+                    "Unexpected error"
+                )
             }
         }
     }
