@@ -16,6 +16,9 @@ final class WeatherSearchViewModel {
         case loaded(Weather)
         case error(String)
     }
+    
+    
+    private let localStorage: WeatherLocalStorage
     private let repository: WeatherRepository
 
     private(set) var state: State = .idle {
@@ -25,9 +28,21 @@ final class WeatherSearchViewModel {
     }
 
     var onStateChanged: ((State) -> Void)?
-    
-    init(repository: WeatherRepository) {
+    init(
+        repository: WeatherRepository,
+        localStorage: WeatherLocalStorage
+    ) {
         self.repository = repository
+        self.localStorage = localStorage
+    }
+    
+    func loadLastSearchedCityIfAvailable() {
+        guard let city = localStorage.loadLastSearchedCity(),
+              !city.isEmpty else {
+            return
+        }
+
+        search(city: city)
     }
     
     func search(city: String) {
@@ -45,6 +60,8 @@ final class WeatherSearchViewModel {
                 let weather = try await repository.fetchWeather(
                     forCity: trimmedCity
                 )
+
+                localStorage.saveLastSearchedCity(trimmedCity)
                 state = .loaded(weather)
            
             } catch let error as LocalizedError {

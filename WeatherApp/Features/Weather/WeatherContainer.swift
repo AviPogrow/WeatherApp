@@ -10,7 +10,7 @@ final class WeatherContainer {
 
     func makeWeatherSearchViewController() -> WeatherSearchViewController {
 
-        
+        let localStorage = UserDefaultsWeatherLocalStorage()
         let remoteDataSource = OpenWeatherRemoteDataSource()
 
         let repository = DefaultWeatherRepository(
@@ -18,7 +18,8 @@ final class WeatherContainer {
         )
 
         let viewModel = WeatherSearchViewModel(
-            repository: repository
+            repository: repository,
+            localStorage: localStorage
         )
 
         return WeatherSearchViewController(
