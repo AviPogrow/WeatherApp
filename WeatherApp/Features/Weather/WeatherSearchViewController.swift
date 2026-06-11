@@ -215,6 +215,10 @@ final class WeatherSearchViewController: UIViewController {
 
         loadWeatherIcon(iconCode: weather.iconCode)
     }
+    
+    func loadCurrentLocationWeather() {
+        viewModel.requestCurrentLocationWeather()
+    }
 
     @objc private func searchButtonTapped() {
         viewModel.search(city: searchTextField.text ?? "")

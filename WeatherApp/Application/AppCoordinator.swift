@@ -12,6 +12,8 @@ final class AppCoordinator {
     private let window: UIWindow
     private let appContainer: AppContainer
 
+    private var weatherCoordinator: WeatherCoordinator?
+
     init(
         window: UIWindow,
         appContainer: AppContainer
@@ -21,13 +23,16 @@ final class AppCoordinator {
     }
 
     func start() {
-        let rootViewController =
-            appContainer.weatherContainer
-                .makeWeatherSearchViewController()
+        let navigationController = UINavigationController()
 
-        let navigationController = UINavigationController(
-            rootViewController: rootViewController
+        let weatherCoordinator = WeatherCoordinator(
+            navigationController: navigationController,
+            weatherContainer: appContainer.weatherContainer
         )
+
+        self.weatherCoordinator = weatherCoordinator
+
+        weatherCoordinator.start()
 
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
