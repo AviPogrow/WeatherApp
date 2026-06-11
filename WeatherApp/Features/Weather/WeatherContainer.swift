@@ -10,7 +10,15 @@ import UIKit
 final class WeatherContainer {
 
     func makeWeatherSearchViewController() -> WeatherSearchViewController {
-
-        WeatherSearchViewController()
-    }
+        
+        let service = MockWeatherService()
+        let repository = DefaultWeatherRepository(
+            weatherService: service
+        )
+        let viewModel = WeatherSearchViewModel(
+            repository: repository
+        )
+        return WeatherSearchViewController(viewModel: viewModel)
+        
+       }
 }
