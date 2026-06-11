@@ -46,8 +46,11 @@ final class WeatherSearchViewModel {
                     forCity: trimmedCity
                 )
                 state = .loaded(weather)
+           
             } catch {
-                state = .error("Could not fetch weather. Please try again.")
+                print("Weather fetch error:", error)
+                state = .error(error.localizedDescription)
+            
             }
         }
     }

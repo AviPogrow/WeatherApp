@@ -8,17 +8,17 @@ import Foundation
 
 final class DefaultWeatherRepository: WeatherRepository {
 
-    private let weatherService: WeatherService
+    private let remoteDataSource: RemoteWeatherDataSource
 
-    init(weatherService: WeatherService) {
-        self.weatherService = weatherService
+    init(remoteDataSource: RemoteWeatherDataSource) {
+        self.remoteDataSource = remoteDataSource
     }
 
     func fetchWeather(
         forCity city: String
     ) async throws -> Weather {
 
-        try await weatherService.fetchWeather(
+        try await remoteDataSource.fetchWeather(
             forCity: city
         )
     }

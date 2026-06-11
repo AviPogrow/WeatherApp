@@ -4,21 +4,25 @@
 //
 //  Created by Avi Pogrow on 6/11/26.
 //
-
 import UIKit
 
 final class WeatherContainer {
 
     func makeWeatherSearchViewController() -> WeatherSearchViewController {
+
         
-        let service = MockWeatherService()
+        let remoteDataSource = OpenWeatherRemoteDataSource()
+
         let repository = DefaultWeatherRepository(
-            weatherService: service
+            remoteDataSource: remoteDataSource
         )
+
         let viewModel = WeatherSearchViewModel(
             repository: repository
         )
-        return WeatherSearchViewController(viewModel: viewModel)
-        
-       }
+
+        return WeatherSearchViewController(
+            viewModel: viewModel
+        )
+    }
 }
