@@ -36,6 +36,13 @@ final class WeatherSearchViewModel {
         locationService.isPermissionDenied
     }
     
+    
+    // Workaround for swiftlang/swift#87316: under MainActor default
+    // isolation, the synthesized isolated deinit over-releases when the
+    // object is deallocated off the main thread (which XCTest does).
+    // An explicit deinit avoids the broken codegen path.
+    nonisolated deinit {}
+    
     init(
         repository: WeatherRepository,
         localStorage: WeatherLocalStorage,

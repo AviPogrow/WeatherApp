@@ -6,6 +6,7 @@
 //
 
 import Foundation
+@testable import WeatherApp
 
 final class MockRemoteWeatherDataSource: RemoteWeatherDataSource {
 
