@@ -289,3 +289,69 @@ extension Weather {
         iconCode: "01d"
     )
 }
+
+final class WeatherDetailViewModelTests: XCTestCase {
+
+    func testFormattingProperties() {
+        let viewModel = WeatherDetailViewModel(weather: .testValue)
+
+        XCTAssertEqual(viewModel.cityName, "Testville")
+        XCTAssertEqual(viewModel.temperatureText, "72°")
+        XCTAssertEqual(viewModel.feelsLikeText, "Feels like 74°")
+        XCTAssertEqual(viewModel.conditionText, "Clear Sky")
+        XCTAssertEqual(viewModel.humidityText, "Humidity: 45%")
+        XCTAssertEqual(viewModel.windText, "Wind: 6.2 mph")
+    }
+
+    func testIconURL() {
+        let viewModel = WeatherDetailViewModel(weather: .testValue)
+
+        XCTAssertEqual(
+            viewModel.iconURL?.absoluteString,
+            "https://openweathermap.org/img/wn/01d@2x.png"
+        )
+    }
+}
+
+final class WeatherResponseDTOTests: XCTestCase {
+
+    func testDecodingOpenWeatherResponse() throws {
+        // Trimmed real response from the OpenWeather API
+        let json = """
+        {
+            "name": "Jersey City",
+            "main": {
+                "temp": 71.6,
+                "feels_like": 72.1,
+                "humidity": 58
+            },
+            "weather": [
+                {
+                    "main": "Clouds",
+                    "description": "scattered clouds",
+                    "icon": "03d"
+                }
+            ],
+            "wind": {
+                "speed": 8.05
+            }
+        }
+        """.data(using: .utf8)!
+
+        // When
+        let dto = try JSONDecoder().decode(WeatherResponseDTO.self, from: json)
+
+        // Then
+        XCTAssertEqual(dto.name, "Jersey City")
+        XCTAssertEqual(dto.main.temp, 71.6)
+        XCTAssertEqual(dto.main.feelsLike, 72.1)
+        XCTAssertEqual(dto.main.humidity, 58)
+        XCTAssertEqual(dto.weather.first?.icon, "03d")
+        XCTAssertEqual(dto.wind.speed, 8.05)
+    }
+}
+
+
+
+
+
