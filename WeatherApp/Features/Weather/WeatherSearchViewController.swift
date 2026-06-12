@@ -77,6 +77,17 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
             for: view.bounds.size,
             traitCollection: traitCollection
         )
+        
+        
+        registerForTraitChanges(
+                    [UITraitHorizontalSizeClass.self]
+                ) { (self: Self, _) in
+                    self.updateLayout(
+                        for: self.view.bounds.size,
+                        traitCollection: self.traitCollection
+                    )
+                }
+        
         bindViewModel()
         refreshLocationButtonTitle()
         showIdleState()
@@ -173,16 +184,7 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    override func traitCollectionDidChange(
-        _ previousTraitCollection: UITraitCollection?
-    ) {
-        super.traitCollectionDidChange(previousTraitCollection)
-
-        updateLayout(
-            for: view.bounds.size,
-            traitCollection: traitCollection
-        )
-    }
+   
     private func updateLayout(
         for size: CGSize,
         traitCollection: UITraitCollection
