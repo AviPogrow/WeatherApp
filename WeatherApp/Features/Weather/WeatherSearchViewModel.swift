@@ -16,8 +16,8 @@ final class WeatherSearchViewModel {
         case loading
         case loaded(Weather)
         case error(String)
+        case locationDenied
     }
-    
     
     private let localStorage: WeatherLocalStorage
     private let repository: WeatherRepository
@@ -32,6 +32,10 @@ final class WeatherSearchViewModel {
 
     var onStateChanged: ((State) -> Void)?
     
+    var isLocationPermissionDenied: Bool {
+        locationService.isPermissionDenied
+    }
+    
     init(
         repository: WeatherRepository,
         localStorage: WeatherLocalStorage,
@@ -45,10 +49,9 @@ final class WeatherSearchViewModel {
     }
     
     func requestCurrentLocationWeather() {
-        locationService.requestLocationPermission()
         locationService.requestCurrentLocation()
     }
-
+    
     private func fetchWeatherForCurrentLocation(
         latitude: Double,
         longitude: Double
@@ -82,20 +85,38 @@ final class WeatherSearchViewModel {
                 )
             }
         }
+
+        locationService.onLocationFailed = { [weak self] error in
+            guard let self else { return }
+
+            if !self.loadLastSearchedCityIfAvailable() {
+                self.state = .locationDenied
+            }
+        }
     }
     
-    
-    func loadLastSearchedCityIfAvailable() {
-        guard let city = localStorage.loadLastSearchedCity(),
-              !city.isEmpty else {
-            return
+   
+    /// Loads weather for the last searched city, if one is saved.
+    /// Returns false when no usable city is stored, so the caller
+    /// can decide what to show instead.
+    @discardableResult
+    func loadLastSearchedCityIfAvailable() -> Bool {
+        guard
+            let city = localStorage.loadLastSearchedCity()?
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+            !city.isEmpty
+        else {
+            return false
         }
 
         fetchWeatherForCity(
             city,
             shouldPersist: false
         )
+
+        return true
     }
+    
     func search(city: String) {
         fetchWeatherForCity(
             city,

@@ -4,7 +4,6 @@
 //
 //  Created by Avi Pogrow on 6/12/26.
 //
-
 import SwiftUI
 
 struct WeatherDetailView: View {
@@ -14,15 +13,16 @@ struct WeatherDetailView: View {
 
     @Environment(\.verticalSizeClass)
     private var verticalSizeClass
-    
+
     let viewModel: WeatherDetailViewModel
 
     var body: some View {
         GeometryReader { proxy in
+            let isLandscape = proxy.size.width > proxy.size.height
+
             let shouldUseTwoColumns =
-                horizontalSizeClass == .regular &&
-                proxy.size.width > proxy.size.height &&
-                proxy.size.width > 700
+                isLandscape &&
+                proxy.size.width > 600
 
             Group {
                 if shouldUseTwoColumns {
@@ -41,27 +41,24 @@ struct WeatherDetailView: View {
     }
 
     private var portraitLayout: some View {
-        VStack(spacing: 24) {
+        ScrollView {
+            VStack(spacing: 24) {
+                fullSummarySection
 
-            summarySection
+                detailsCard
 
-            detailsCard
-
-            moreInfoCard
-
-            Spacer()
+                moreInfoCard
+            }
+            .padding()
         }
-        .padding()
     }
 
     private var landscapeLayout: some View {
         HStack(spacing: 32) {
-
-            summarySection
+            compactSummarySection
                 .frame(maxWidth: .infinity)
 
-            VStack(spacing: 20) {
-
+            VStack(spacing: 16) {
                 detailsCard
 
                 moreInfoCard
@@ -71,27 +68,16 @@ struct WeatherDetailView: View {
             .frame(maxWidth: .infinity)
         }
         .padding(.horizontal, 48)
-        .padding(.vertical, 24)
+        .padding(.vertical, 12)
     }
 
-    private var summarySection: some View {
+    private var fullSummarySection: some View {
         VStack(spacing: 12) {
-
             Text(viewModel.cityName)
                 .font(.largeTitle)
                 .fontWeight(.bold)
 
-            if let iconURL = viewModel.iconURL {
-
-                AsyncImage(url: iconURL) { image in
-                    image
-                        .resizable()
-                        .scaledToFit()
-                } placeholder: {
-                    ProgressView()
-                }
-                .frame(width: 120, height: 120)
-            }
+            weatherIcon(size: 120)
 
             Text(viewModel.temperatureText)
                 .font(.system(size: 64, weight: .light))
@@ -102,9 +88,39 @@ struct WeatherDetailView: View {
         }
     }
 
-    private var detailsCard: some View {
-        VStack(spacing: 16) {
+    private var compactSummarySection: some View {
+        VStack(spacing: 8) {
+            Text(viewModel.cityName)
+                .font(.title)
+                .fontWeight(.bold)
 
+            weatherIcon(size: 72)
+
+            Text(viewModel.temperatureText)
+                .font(.system(size: 56, weight: .light))
+
+            Text(viewModel.conditionText)
+                .font(.title3)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder
+    private func weatherIcon(size: CGFloat) -> some View {
+        if let iconURL = viewModel.iconURL {
+            AsyncImage(url: iconURL) { image in
+                image
+                    .resizable()
+                    .scaledToFit()
+            } placeholder: {
+                ProgressView()
+            }
+            .frame(width: size, height: size)
+        }
+    }
+
+    private var detailsCard: some View {
+        VStack(spacing: 14) {
             detailRow(
                 systemImage: "thermometer.medium",
                 title: "Feels Like",
@@ -133,11 +149,7 @@ struct WeatherDetailView: View {
     }
 
     private var moreInfoCard: some View {
-        VStack(
-            alignment: .leading,
-            spacing: 16
-        ) {
-
+        VStack(alignment: .leading, spacing: 14) {
             Text("More Information")
                 .font(.headline)
 
@@ -159,9 +171,7 @@ struct WeatherDetailView: View {
         title: String,
         value: String
     ) -> some View {
-
         HStack(spacing: 12) {
-
             Image(systemName: systemImage)
                 .font(.title2)
                 .foregroundStyle(.blue)
@@ -173,6 +183,8 @@ struct WeatherDetailView: View {
 
             Text(value)
                 .fontWeight(.semibold)
+                .multilineTextAlignment(.trailing)
+                .lineLimit(2)
         }
     }
 }

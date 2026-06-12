@@ -5,6 +5,7 @@
 //  Created by Avi Pogrow on 6/11/26.
 //
 import Foundation
+import Foundation
 
 final class UserDefaultsWeatherLocalStorage: WeatherLocalStorage {
 
@@ -13,6 +14,8 @@ final class UserDefaultsWeatherLocalStorage: WeatherLocalStorage {
     }
 
     func saveLastSearchedCity(_ city: String) {
+        print("Saving last searched city:", city)
+
         UserDefaults.standard.set(
             city,
             forKey: Keys.lastSearchedCity
@@ -20,8 +23,12 @@ final class UserDefaultsWeatherLocalStorage: WeatherLocalStorage {
     }
 
     func loadLastSearchedCity() -> String? {
-        UserDefaults.standard.string(
+        let city = UserDefaults.standard.string(
             forKey: Keys.lastSearchedCity
         )
+
+        print("Loaded last searched city:", city ?? "nil")
+
+        return city
     }
 }

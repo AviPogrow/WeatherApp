@@ -73,7 +73,10 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         showIdleState()
         detailsButton.isHidden = true
 
-        viewModel.loadLastSearchedCityIfAvailable()
+        // Launch policy: try current location first. If permission is denied
+        // or the fix fails, the ViewModel falls back to the last searched
+        // city, and shows a prompt to search only if neither is available.
+        viewModel.requestCurrentLocationWeather()
 
         let tapGesture = UITapGestureRecognizer(
             target: self,
@@ -323,7 +326,7 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
 
         // MARK: - Separator
 
-        separatorLabel.text = "OR"
+        separatorLabel.text = "Enter a city to search weather"
         separatorLabel.font = .systemFont(
             ofSize: 14,
             weight: .semibold
@@ -408,7 +411,14 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc private func currentLocationButtonTapped() {
-        viewModel.requestCurrentLocationWeather()
+        if viewModel.isLocationPermissionDenied {
+            // Permission can't be re-prompted once denied —
+            // Settings is the only way for the user to re-enable it.
+            guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+            UIApplication.shared.open(url)
+        } else {
+            viewModel.requestCurrentLocationWeather()
+        }
     }
 
     private func configureWeatherLabels() {
@@ -510,8 +520,10 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
 
             case .error(let message):
                 self.showError(message)
-            }
-        }
+
+            case .locationDenied:
+                self.showLocationDeniedState()
+            }        }
     }
 
     private func showIdleState() {
@@ -540,9 +552,13 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         windLabel.text = nil
         iconImageView.image = nil
     }
-
+    
+    private func showLocationDeniedState() {
+        separatorLabel.text = "Location unavailable. Search for a city below."
+    }
    
     private func showWeather(_ weather: Weather) {
+        
         currentWeather = weather
 
         cityLabel.text = weather.cityName
