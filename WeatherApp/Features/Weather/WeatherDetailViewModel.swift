@@ -10,6 +10,9 @@ import Foundation
 struct WeatherDetailViewModel {
 
     private let weather: Weather
+    var iconCode: String {
+            weather.iconCode
+        }
 
     init(weather: Weather) {
         self.weather = weather

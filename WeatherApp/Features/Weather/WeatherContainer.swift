@@ -8,6 +8,7 @@ import UIKit
 
 final class WeatherContainer {
 
+    private let imageLoader = ImageLoader()
     func makeWeatherSearchViewController() -> WeatherSearchViewController {
 
         let localStorage = UserDefaultsWeatherLocalStorage()
@@ -25,20 +26,21 @@ final class WeatherContainer {
         )
 
         return WeatherSearchViewController(
-            viewModel: viewModel
-        )
+                    viewModel: viewModel,
+                    imageLoader: imageLoader
+                )
     }
-    
     func makeWeatherDetailView(
-        weather: Weather
-    ) -> WeatherDetailView {
+            weather: Weather
+        ) -> WeatherDetailView {
 
-        let viewModel = WeatherDetailViewModel(
-            weather: weather
-        )
+            let viewModel = WeatherDetailViewModel(
+                weather: weather
+            )
 
-        return WeatherDetailView(
-            viewModel: viewModel
-        )
-    }
+            return WeatherDetailView(
+                viewModel: viewModel,
+                imageLoader: imageLoader
+            )
+        }
 }

@@ -9,6 +9,7 @@ import UIKit
 
 final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
 
+    
     private var currentLocationButtonHeightConstraint: NSLayoutConstraint?
     private var searchButtonHeightConstraint: NSLayoutConstraint?
     private let scrollView = UIScrollView()
@@ -17,6 +18,9 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
     private let resultsStackView = UIStackView()
     
     private let viewModel: WeatherSearchViewModel
+    private let imageLoader: ImageLoader 
+    
+    
     var onViewDetailsTapped: ((Weather) -> Void)?
     private var currentWeather: Weather?
 
@@ -37,11 +41,15 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
     
     private let weatherCardView = UIView()
 
-    init(viewModel: WeatherSearchViewModel) {
-        self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
-        title = "Weather"
-    }
+    init(
+           viewModel: WeatherSearchViewModel,
+           imageLoader: ImageLoader
+       ) {
+           self.viewModel = viewModel
+           self.imageLoader = imageLoader
+           super.init(nibName: nil, bundle: nil)
+           title = "Weather"
+       }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -487,22 +495,17 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         return weatherCardView
     }
     private func loadWeatherIcon(iconCode: String) {
-        guard let url = URL(
-            string: "https://openweathermap.org/img/wn/\(iconCode)@2x.png"
-        ) else {
-            return
-        }
-
-        Task {
-            do {
-                let (data, _) = try await URLSession.shared.data(from: url)
-                iconImageView.image = UIImage(data: data)
-            } catch {
-                print("Icon load error:", error)
-                iconImageView.image = nil
+            Task {
+                do {
+                    iconImageView.image = try await imageLoader.image(
+                        forIconCode: iconCode
+                    )
+                } catch {
+                    iconImageView.image = nil
+                }
             }
         }
-    }
+    
 
     private func bindViewModel() {
         viewModel.onStateChanged = { [weak self] state in

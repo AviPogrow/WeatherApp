@@ -15,6 +15,9 @@ struct WeatherDetailView: View {
     private var verticalSizeClass
 
     let viewModel: WeatherDetailViewModel
+    let imageLoader: ImageLoader
+    
+    
 
     var body: some View {
         GeometryReader { proxy in
@@ -105,19 +108,27 @@ struct WeatherDetailView: View {
         }
     }
 
-    @ViewBuilder
-    private func weatherIcon(size: CGFloat) -> some View {
-        if let iconURL = viewModel.iconURL {
-            AsyncImage(url: iconURL) { image in
-                image
-                    .resizable()
-                    .scaledToFit()
-            } placeholder: {
-                ProgressView()
+    @State private var iconImage: UIImage?
+
+        @ViewBuilder
+        private func weatherIcon(size: CGFloat) -> some View {
+            Group {
+                if let iconImage {
+                    Image(uiImage: iconImage)
+                        .resizable()
+                        .scaledToFit()
+                } else {
+                    ProgressView()
+                }
             }
             .frame(width: size, height: size)
+            .task {
+                iconImage = try? await imageLoader.image(
+                    forIconCode: viewModel.iconCode
+                )
+                
+            }
         }
-    }
 
     private var detailsCard: some View {
         VStack(spacing: 14) {
