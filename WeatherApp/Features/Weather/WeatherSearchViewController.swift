@@ -580,8 +580,7 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         viewModel.requestCurrentLocationWeather()
     }
     @objc private func searchButtonTapped() {
-        print("SEARCH BUTTON TAPPED")
-
+        
         view.endEditing(true)
         viewModel.search(city: searchTextField.text ?? "")
     }
