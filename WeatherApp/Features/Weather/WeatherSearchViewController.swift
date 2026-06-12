@@ -78,6 +78,7 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
             traitCollection: traitCollection
         )
         bindViewModel()
+        refreshLocationButtonTitle()
         showIdleState()
         detailsButton.isHidden = true
 
@@ -193,10 +194,6 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         let shouldUseTwoColumns =
             isLandscape || isRegularWidth
 
-        //rootStackView.backgroundColor = .yellow
-        //inputStackView.backgroundColor = .systemPink
-        //resultsStackView.backgroundColor = .systemGreen
-        //scrollView.backgroundColor = .blue
         
         rootStackView.axis =
             shouldUseTwoColumns ? .horizontal : .vertical
@@ -291,11 +288,6 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         )
 
         // MARK: - Current Location Button
-
-        currentLocationButton.setTitle(
-            "Use Current Location",
-            for: .normal
-        )
 
         currentLocationButton.titleLabel?.font = .systemFont(
             ofSize: 18,
@@ -511,6 +503,8 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         viewModel.onStateChanged = { [weak self] state in
             guard let self else { return }
 
+            self.refreshLocationButtonTitle()
+
             switch state {
             case .idle:
                 self.showIdleState()
@@ -559,6 +553,14 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
     private func showLocationDeniedState() {
         separatorLabel.text = "Location unavailable. Search for a city below."
     }
+    
+    private func refreshLocationButtonTitle() {
+            let title = viewModel.isLocationPermissionDenied
+                ? "Enable Location in Settings"
+                : "Use Current Location"
+
+            currentLocationButton.setTitle(title, for: .normal)
+        }
    
     private func showWeather(_ weather: Weather) {
         
