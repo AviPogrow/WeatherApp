@@ -10,10 +10,13 @@ import UIKit
 final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
 
     private let viewModel: WeatherSearchViewModel
+    var onViewDetailsTapped: ((Weather) -> Void)?
+    private var currentWeather: Weather?
 
     private let titleLabel = UILabel()
     private let searchTextField = UITextField()
     private let searchButton = UIButton(type: .system)
+    private let detailsButton = UIButton(type: .system)
     
     private let currentLocationButton = UIButton(type: .system)
     private let separatorLabel = UILabel()
@@ -43,6 +46,7 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         setupUI()
         bindViewModel()
         showIdleState()
+        detailsButton.isHidden = true
 
         viewModel.loadLastSearchedCityIfAvailable()
 
@@ -54,6 +58,14 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         tapGesture.cancelsTouchesInView = false
 
         view.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func detailsButtonTapped() {
+        guard let currentWeather else {
+            return
+        }
+
+        onViewDetailsTapped?(currentWeather)
     }
     
     @objc private func dismissKeyboard() {
@@ -109,6 +121,15 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
             action: #selector(currentLocationButtonTapped),
             for: .touchUpInside
         )
+        
+        detailsButton.setTitle("View Details", for: .normal)
+        detailsButton.isHidden = true
+
+        detailsButton.addTarget(
+            self,
+            action: #selector(detailsButtonTapped),
+            for: .touchUpInside
+        )
 
         separatorLabel.text = "OR"
         separatorLabel.font = .systemFont(ofSize: 14, weight: .semibold)
@@ -125,7 +146,8 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
             separatorLabel,
             searchTextField,
             searchButton,
-            weatherCard
+            weatherCard,
+            detailsButton
         ])
         stackView.axis = .vertical
         stackView.spacing = 20
@@ -290,13 +312,17 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
     }
 
    
-
     private func showWeather(_ weather: Weather) {
+        currentWeather = weather
+
         cityLabel.text = weather.cityName
         temperatureLabel.text = "\(Int(weather.temperature))°"
         conditionLabel.text = weather.description.capitalized
-        humidityLabel.text = "Humidity: \(weather.humidity)%"
-        windLabel.text = "Wind: \(weather.windSpeed) mph"
+
+        humidityLabel.text = nil
+        windLabel.text = nil
+
+        detailsButton.isHidden = false
 
         loadWeatherIcon(iconCode: weather.iconCode)
     }

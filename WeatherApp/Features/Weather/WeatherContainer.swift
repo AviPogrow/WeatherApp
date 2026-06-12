@@ -28,4 +28,17 @@ final class WeatherContainer {
             viewModel: viewModel
         )
     }
+    
+    func makeWeatherDetailView(
+        weather: Weather
+    ) -> WeatherDetailView {
+
+        let viewModel = WeatherDetailViewModel(
+            weather: weather
+        )
+
+        return WeatherDetailView(
+            viewModel: viewModel
+        )
+    }
 }

@@ -9,7 +9,11 @@ import Foundation
 
 struct WeatherDetailViewModel {
 
-    let weather: Weather
+    private let weather: Weather
+
+    init(weather: Weather) {
+        self.weather = weather
+    }
 
     var cityName: String {
         weather.cityName
