@@ -9,17 +9,23 @@ import SwiftUI
 
 struct WeatherDetailView: View {
 
+    @Environment(\.horizontalSizeClass)
+    private var horizontalSizeClass
+
+    @Environment(\.verticalSizeClass)
+    private var verticalSizeClass
+    
     let viewModel: WeatherDetailViewModel
 
     var body: some View {
-
         GeometryReader { proxy in
-
-            let isLandscape =
-                proxy.size.width > proxy.size.height
+            let shouldUseTwoColumns =
+                horizontalSizeClass == .regular &&
+                proxy.size.width > proxy.size.height &&
+                proxy.size.width > 700
 
             Group {
-                if isLandscape {
+                if shouldUseTwoColumns {
                     landscapeLayout
                 } else {
                     portraitLayout
