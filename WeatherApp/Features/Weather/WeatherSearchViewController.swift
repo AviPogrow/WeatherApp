@@ -49,6 +49,20 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
 
         setupUI()
         updateLayout(
@@ -69,6 +83,63 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         tapGesture.cancelsTouchesInView = false
 
         view.addGestureRecognizer(tapGesture)
+    }
+    @objc private func keyboardWillShow(
+        notification: Notification
+    ) {
+        guard
+            let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+            let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
+            let curveRawValue = notification.userInfo?[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt
+        else {
+            return
+        }
+
+        let options = UIView.AnimationOptions(
+            rawValue: curveRawValue << 16
+        )
+
+        let keyboardHeight = keyboardFrame.height
+
+        UIView.animate(
+            withDuration: duration,
+            delay: 0,
+            options: options
+        ) {
+            self.scrollView.contentInset.bottom = keyboardHeight
+            self.scrollView.verticalScrollIndicatorInsets.bottom = keyboardHeight
+
+            self.scrollView.scrollRectToVisible(
+                self.searchTextField.convert(
+                    self.searchTextField.bounds,
+                    to: self.scrollView
+                ),
+                animated: false
+            )
+        }
+    }
+    @objc private func keyboardWillHide(
+        notification: Notification
+    ) {
+        guard
+            let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
+            let curveRawValue = notification.userInfo?[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt
+        else {
+            return
+        }
+
+        let options = UIView.AnimationOptions(
+            rawValue: curveRawValue << 16
+        )
+
+        UIView.animate(
+            withDuration: duration,
+            delay: 0,
+            options: options
+        ) {
+            self.scrollView.contentInset.bottom = 0
+            self.scrollView.verticalScrollIndicatorInsets.bottom = 0
+        }
     }
     
     override func viewWillTransition(
