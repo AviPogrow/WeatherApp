@@ -9,6 +9,13 @@ import UIKit
 
 final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
 
+    private var currentLocationButtonHeightConstraint: NSLayoutConstraint?
+    private var searchButtonHeightConstraint: NSLayoutConstraint?
+    private let scrollView = UIScrollView()
+    private let rootStackView = UIStackView()
+    private let inputStackView = UIStackView()
+    private let resultsStackView = UIStackView()
+    
     private let viewModel: WeatherSearchViewModel
     var onViewDetailsTapped: ((Weather) -> Void)?
     private var currentWeather: Weather?
@@ -44,6 +51,10 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         super.viewDidLoad()
 
         setupUI()
+        updateLayout(
+            for: view.bounds.size,
+            traitCollection: traitCollection
+        )
         bindViewModel()
         showIdleState()
         detailsButton.isHidden = true
@@ -60,6 +71,78 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         view.addGestureRecognizer(tapGesture)
     }
     
+    override func viewWillTransition(
+        to size: CGSize,
+        with coordinator: UIViewControllerTransitionCoordinator
+    ) {
+        super.viewWillTransition(
+            to: size,
+            with: coordinator
+        )
+
+        coordinator.animate { [weak self] _ in
+            guard let self else { return }
+
+            self.updateLayout(
+                for: size,
+                traitCollection: self.traitCollection
+            )
+        }
+    }
+    
+    override func traitCollectionDidChange(
+        _ previousTraitCollection: UITraitCollection?
+    ) {
+        super.traitCollectionDidChange(previousTraitCollection)
+
+        updateLayout(
+            for: view.bounds.size,
+            traitCollection: traitCollection
+        )
+    }
+    private func updateLayout(
+        for size: CGSize,
+        traitCollection: UITraitCollection
+    ) {
+        let isLandscape = size.width > size.height
+        let isRegularWidth =
+            traitCollection.horizontalSizeClass == .regular
+
+        let shouldUseTwoColumns =
+            isLandscape || isRegularWidth
+
+        //rootStackView.backgroundColor = .yellow
+        //inputStackView.backgroundColor = .systemPink
+        //resultsStackView.backgroundColor = .systemGreen
+        //scrollView.backgroundColor = .blue
+        
+        rootStackView.axis =
+            shouldUseTwoColumns ? .horizontal : .vertical
+
+        rootStackView.distribution =
+            shouldUseTwoColumns ? .fillEqually : .fill
+
+        rootStackView.alignment = .fill
+
+        rootStackView.spacing =
+            shouldUseTwoColumns ? 32 : 24
+
+        inputStackView.spacing =
+            shouldUseTwoColumns ? 8 : 16
+
+        resultsStackView.spacing =
+            shouldUseTwoColumns ? 8 : 16
+
+        titleLabel.font = shouldUseTwoColumns
+            ? .systemFont(ofSize: 22, weight: .bold)
+            : .systemFont(ofSize: 28, weight: .bold)
+        
+        currentLocationButtonHeightConstraint?.constant =
+            shouldUseTwoColumns ? 38 : 48
+
+        searchButtonHeightConstraint?.constant =
+            shouldUseTwoColumns ? 36 : 44
+    }
     @objc private func detailsButtonTapped() {
         guard let currentWeather else {
             return
@@ -84,45 +167,81 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
     }
 
     private func setupUI() {
+
         view.backgroundColor = .systemBackground
-        
+
         searchTextField.delegate = self
+
+        // MARK: - Title
 
         titleLabel.text = "Weather Search"
         titleLabel.font = .systemFont(ofSize: 28, weight: .bold)
         titleLabel.textAlignment = .center
+
+        // MARK: - Search Field
 
         searchTextField.placeholder = "Enter city"
         searchTextField.borderStyle = .roundedRect
         searchTextField.autocapitalizationType = .words
         searchTextField.returnKeyType = .search
 
+        // MARK: - Search Button
+
         searchButton.setTitle("Search", for: .normal)
-        searchButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+        searchButton.titleLabel?.font = .systemFont(
+            ofSize: 18,
+            weight: .semibold
+        )
+
         searchButton.layer.cornerRadius = 10
         searchButton.layer.borderWidth = 1
         searchButton.layer.borderColor = UIColor.systemBlue.cgColor
-        searchButton.heightAnchor.constraint(equalToConstant: 44).isActive = true
+
+        searchButtonHeightConstraint =
+            searchButton.heightAnchor.constraint(equalToConstant: 44)
+
+        searchButtonHeightConstraint?.isActive = true
+
         searchButton.addTarget(
             self,
             action: #selector(searchButtonTapped),
             for: .touchUpInside
         )
-        
-        currentLocationButton.setTitle("Use Current Location", for: .normal)
-        currentLocationButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+
+        // MARK: - Current Location Button
+
+        currentLocationButton.setTitle(
+            "Use Current Location",
+            for: .normal
+        )
+
+        currentLocationButton.titleLabel?.font = .systemFont(
+            ofSize: 18,
+            weight: .semibold
+        )
+
         currentLocationButton.backgroundColor = .systemBlue
         currentLocationButton.tintColor = .white
         currentLocationButton.layer.cornerRadius = 10
-        currentLocationButton.heightAnchor.constraint(equalToConstant: 48).isActive = true
+
+        currentLocationButtonHeightConstraint =
+            currentLocationButton.heightAnchor.constraint(equalToConstant: 48)
+
+        currentLocationButtonHeightConstraint?.isActive = true
 
         currentLocationButton.addTarget(
             self,
             action: #selector(currentLocationButtonTapped),
             for: .touchUpInside
         )
-        
-        detailsButton.setTitle("View Details", for: .normal)
+
+        // MARK: - Details Button
+
+        detailsButton.setTitle(
+            "View Details",
+            for: .normal
+        )
+
         detailsButton.isHidden = true
 
         detailsButton.addTarget(
@@ -131,47 +250,87 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
             for: .touchUpInside
         )
 
+        // MARK: - Separator
+
         separatorLabel.text = "OR"
-        separatorLabel.font = .systemFont(ofSize: 14, weight: .semibold)
+        separatorLabel.font = .systemFont(
+            ofSize: 14,
+            weight: .semibold
+        )
+
         separatorLabel.textColor = .secondaryLabel
         separatorLabel.textAlignment = .center
+
+        // MARK: - Weather Card
 
         configureWeatherLabels()
         configureWeatherCard()
 
         let weatherCard = makeWeatherCard()
-        let stackView = UIStackView(arrangedSubviews: [
-            titleLabel,
-            currentLocationButton,
-            separatorLabel,
-            searchTextField,
-            searchButton,
-            weatherCard,
-            detailsButton
-        ])
-        stackView.axis = .vertical
-        stackView.spacing = 20
-        stackView.alignment = .fill
-        stackView.translatesAutoresizingMaskIntoConstraints = false
 
-        view.addSubview(stackView)
+        // MARK: - Input Stack
+
+        inputStackView.axis = .vertical
+        inputStackView.spacing = 16
+
+        inputStackView.addArrangedSubview(titleLabel)
+        inputStackView.addArrangedSubview(currentLocationButton)
+        inputStackView.addArrangedSubview(separatorLabel)
+        inputStackView.addArrangedSubview(searchTextField)
+        inputStackView.addArrangedSubview(searchButton)
+
+        // MARK: - Results Stack
+
+        resultsStackView.axis = .vertical
+        resultsStackView.spacing = 16
+
+        resultsStackView.addArrangedSubview(weatherCard)
+        resultsStackView.addArrangedSubview(detailsButton)
+
+        // MARK: - Root Stack
+
+        rootStackView.axis = .vertical
+        rootStackView.spacing = 24
+        rootStackView.translatesAutoresizingMaskIntoConstraints = false
+
+        rootStackView.addArrangedSubview(inputStackView)
+        rootStackView.addArrangedSubview(resultsStackView)
+
+        view.addSubview(scrollView)
+
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        rootStackView.translatesAutoresizingMaskIntoConstraints = false
+
+        scrollView.addSubview(rootStackView)
 
         NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.leadingAnchor,
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+
+            rootStackView.topAnchor.constraint(
+                equalTo: scrollView.contentLayoutGuide.topAnchor,
+                constant: 0
+            ),
+            rootStackView.leadingAnchor.constraint(
+                equalTo: scrollView.contentLayoutGuide.leadingAnchor,
                 constant: 24
             ),
-            stackView.trailingAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.trailingAnchor,
+            rootStackView.trailingAnchor.constraint(
+                equalTo: scrollView.contentLayoutGuide.trailingAnchor,
                 constant: -24
             ),
-            stackView.topAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.topAnchor,
-                constant: 80
+            rootStackView.bottomAnchor.constraint(
+                equalTo: scrollView.contentLayoutGuide.bottomAnchor,
+                constant: -24
+            ),
+            rootStackView.widthAnchor.constraint(
+                equalTo: scrollView.frameLayoutGuide.widthAnchor,
+                constant: -48
             )
         ])
     }
-    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         searchButtonTapped()
         return true
@@ -225,7 +384,7 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         NSLayoutConstraint.activate([
             contentStack.topAnchor.constraint(
                 equalTo: weatherCardView.topAnchor,
-                constant: 20
+                constant: 12
             ),
 
             contentStack.leadingAnchor.constraint(
