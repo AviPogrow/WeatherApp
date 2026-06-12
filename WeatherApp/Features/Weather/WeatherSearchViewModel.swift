@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Foundation
 import CoreLocation
 
 @MainActor
@@ -92,10 +91,21 @@ final class WeatherSearchViewModel {
             return
         }
 
-        search(city: city)
+        fetchWeatherForCity(
+            city,
+            shouldPersist: false
+        )
     }
-    
     func search(city: String) {
+        fetchWeatherForCity(
+            city,
+            shouldPersist: true
+        )
+    }
+    private func fetchWeatherForCity(
+        _ city: String,
+        shouldPersist: Bool
+    ) {
         let trimmedCity = city.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmedCity.isEmpty else {
@@ -111,25 +121,17 @@ final class WeatherSearchViewModel {
                     forCity: trimmedCity
                 )
 
-                localStorage.saveLastSearchedCity(trimmedCity)
+                if shouldPersist {
+                    localStorage.saveLastSearchedCity(trimmedCity)
+                }
+
                 state = .loaded(weather)
-           
+
             } catch let error as LocalizedError {
-
-                print("Weather fetch error:", error)
-
-                state = .error(
-                    error.errorDescription ??
-                    "Unknown error"
-                )
+                state = .error(error.errorDescription ?? "Unknown error")
 
             } catch {
-
-                print("Weather fetch error:", error)
-
-                state = .error(
-                    "Unexpected error"
-                )
+                state = .error("Unexpected error")
             }
         }
     }

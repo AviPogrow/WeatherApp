@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class WeatherSearchViewController: UIViewController {
+final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
 
     private let viewModel: WeatherSearchViewModel
 
@@ -43,13 +43,15 @@ final class WeatherSearchViewController: UIViewController {
         setupUI()
         bindViewModel()
         showIdleState()
+
         viewModel.loadLastSearchedCityIfAvailable()
-        viewModel.requestCurrentLocationWeather()
-        
+
         let tapGesture = UITapGestureRecognizer(
             target: self,
             action: #selector(dismissKeyboard)
         )
+
+        tapGesture.cancelsTouchesInView = false
 
         view.addGestureRecognizer(tapGesture)
     }
@@ -71,6 +73,8 @@ final class WeatherSearchViewController: UIViewController {
 
     private func setupUI() {
         view.backgroundColor = .systemBackground
+        
+        searchTextField.delegate = self
 
         titleLabel.text = "Weather Search"
         titleLabel.font = .systemFont(ofSize: 28, weight: .bold)
@@ -146,7 +150,10 @@ final class WeatherSearchViewController: UIViewController {
         ])
     }
     
-   
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        searchButtonTapped()
+        return true
+    }
     
     @objc private func currentLocationButtonTapped() {
         viewModel.requestCurrentLocationWeather()
@@ -297,10 +304,10 @@ final class WeatherSearchViewController: UIViewController {
     func loadCurrentLocationWeather() {
         viewModel.requestCurrentLocationWeather()
     }
-
     @objc private func searchButtonTapped() {
-        view.endEditing(true)
+        print("SEARCH BUTTON TAPPED")
 
+        view.endEditing(true)
         viewModel.search(city: searchTextField.text ?? "")
     }
    

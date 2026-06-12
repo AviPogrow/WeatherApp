@@ -6,3 +6,38 @@
 //
 
 import Foundation
+
+struct WeatherDetailViewModel {
+
+    let weather: Weather
+
+    var cityName: String {
+        weather.cityName
+    }
+
+    var temperatureText: String {
+        "\(Int(weather.temperature))°"
+    }
+
+    var feelsLikeText: String {
+        "Feels like \(Int(weather.feelsLike))°"
+    }
+
+    var conditionText: String {
+        weather.description.capitalized
+    }
+
+    var humidityText: String {
+        "Humidity: \(weather.humidity)%"
+    }
+
+    var windText: String {
+        "Wind: \(weather.windSpeed) mph"
+    }
+
+    var iconURL: URL? {
+        URL(
+            string: "https://openweathermap.org/img/wn/\(weather.iconCode)@2x.png"
+        )
+    }
+}
