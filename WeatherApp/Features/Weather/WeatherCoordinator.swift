@@ -4,9 +4,7 @@
 //
 //  Created by Avi Pogrow on 6/11/26.
 //
-
 import UIKit
-import SwiftUI
 
 final class WeatherCoordinator {
 
@@ -22,36 +20,12 @@ final class WeatherCoordinator {
     }
 
     func start() {
-        let menuView = WeatherMenuView(
-            onUseCurrentLocation: { [weak self] in
-                self?.showWeatherSearch(loadCurrentLocation: true)
-            },
-            onSearchByCity: { [weak self] in
-                self?.showWeatherSearch(loadCurrentLocation: false)
-            }
-        )
-
-        let menuViewController = UIHostingController(
-            rootView: menuView
-        )
-
-        navigationController.setViewControllers(
-            [menuViewController],
-            animated: false
-        )
-    }
-
-    private func showWeatherSearch(loadCurrentLocation: Bool) {
         let viewController =
             weatherContainer.makeWeatherSearchViewController()
 
-        navigationController.pushViewController(
-            viewController,
-            animated: true
+        navigationController.setViewControllers(
+            [viewController],
+            animated: false
         )
-
-        if loadCurrentLocation {
-            viewController.loadCurrentLocationWeather()
-        }
     }
 }

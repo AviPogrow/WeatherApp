@@ -14,6 +14,9 @@ final class WeatherSearchViewController: UIViewController {
     private let titleLabel = UILabel()
     private let searchTextField = UITextField()
     private let searchButton = UIButton(type: .system)
+    
+    private let currentLocationButton = UIButton(type: .system)
+    private let separatorLabel = UILabel()
 
     private let cityLabel = UILabel()
     private let iconImageView = UIImageView()
@@ -22,7 +25,7 @@ final class WeatherSearchViewController: UIViewController {
     private let humidityLabel = UILabel()
     private let windLabel = UILabel()
     
- 
+    private let weatherCardView = UIView()
 
     init(viewModel: WeatherSearchViewModel) {
         self.viewModel = viewModel
@@ -40,8 +43,30 @@ final class WeatherSearchViewController: UIViewController {
         setupUI()
         bindViewModel()
         showIdleState()
-        //viewModel.loadLastSearchedCityIfAvailable()
+        viewModel.loadLastSearchedCityIfAvailable()
         viewModel.requestCurrentLocationWeather()
+        
+        let tapGesture = UITapGestureRecognizer(
+            target: self,
+            action: #selector(dismissKeyboard)
+        )
+
+        view.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
+    private func configureWeatherCard() {
+
+        weatherCardView.backgroundColor = .secondarySystemBackground
+        weatherCardView.layer.cornerRadius = 16
+
+        weatherCardView.layer.shadowColor = UIColor.black.cgColor
+        weatherCardView.layer.shadowOpacity = 0.1
+        weatherCardView.layer.shadowRadius = 8
+        weatherCardView.layer.shadowOffset = CGSize(width: 0, height: 2)
     }
 
     private func setupUI() {
@@ -58,23 +83,46 @@ final class WeatherSearchViewController: UIViewController {
 
         searchButton.setTitle("Search", for: .normal)
         searchButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+        searchButton.layer.cornerRadius = 10
+        searchButton.layer.borderWidth = 1
+        searchButton.layer.borderColor = UIColor.systemBlue.cgColor
+        searchButton.heightAnchor.constraint(equalToConstant: 44).isActive = true
         searchButton.addTarget(
             self,
             action: #selector(searchButtonTapped),
             for: .touchUpInside
         )
+        
+        currentLocationButton.setTitle("Use Current Location", for: .normal)
+        currentLocationButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+        currentLocationButton.backgroundColor = .systemBlue
+        currentLocationButton.tintColor = .white
+        currentLocationButton.layer.cornerRadius = 10
+        currentLocationButton.heightAnchor.constraint(equalToConstant: 48).isActive = true
+
+        currentLocationButton.addTarget(
+            self,
+            action: #selector(currentLocationButtonTapped),
+            for: .touchUpInside
+        )
+
+        separatorLabel.text = "OR"
+        separatorLabel.font = .systemFont(ofSize: 14, weight: .semibold)
+        separatorLabel.textColor = .secondaryLabel
+        separatorLabel.textAlignment = .center
 
         configureWeatherLabels()
+        configureWeatherCard()
 
         let weatherCard = makeWeatherCard()
-
         let stackView = UIStackView(arrangedSubviews: [
             titleLabel,
+            currentLocationButton,
+            separatorLabel,
             searchTextField,
             searchButton,
             weatherCard
         ])
-
         stackView.axis = .vertical
         stackView.spacing = 20
         stackView.alignment = .fill
@@ -96,6 +144,12 @@ final class WeatherSearchViewController: UIViewController {
                 constant: 80
             )
         ])
+    }
+    
+   
+    
+    @objc private func currentLocationButtonTapped() {
+        viewModel.requestCurrentLocationWeather()
     }
 
     private func configureWeatherLabels() {
@@ -122,8 +176,9 @@ final class WeatherSearchViewController: UIViewController {
         ])
     }
 
-    private func makeWeatherCard() -> UIStackView {
-        let weatherCard = UIStackView(arrangedSubviews: [
+    private func makeWeatherCard() -> UIView {
+
+        let contentStack = UIStackView(arrangedSubviews: [
             cityLabel,
             iconImageView,
             temperatureLabel,
@@ -132,13 +187,36 @@ final class WeatherSearchViewController: UIViewController {
             windLabel
         ])
 
-        weatherCard.axis = .vertical
-        weatherCard.spacing = 8
-        weatherCard.alignment = .fill
+        contentStack.axis = .vertical
+        contentStack.spacing = 8
+        contentStack.translatesAutoresizingMaskIntoConstraints = false
 
-        return weatherCard
+        weatherCardView.addSubview(contentStack)
+
+        NSLayoutConstraint.activate([
+            contentStack.topAnchor.constraint(
+                equalTo: weatherCardView.topAnchor,
+                constant: 20
+            ),
+
+            contentStack.leadingAnchor.constraint(
+                equalTo: weatherCardView.leadingAnchor,
+                constant: 20
+            ),
+
+            contentStack.trailingAnchor.constraint(
+                equalTo: weatherCardView.trailingAnchor,
+                constant: -20
+            ),
+
+            contentStack.bottomAnchor.constraint(
+                equalTo: weatherCardView.bottomAnchor,
+                constant: -20
+            )
+        ])
+
+        return weatherCardView
     }
-    
     private func loadWeatherIcon(iconCode: String) {
         guard let url = URL(
             string: "https://openweathermap.org/img/wn/\(iconCode)@2x.png"
@@ -221,6 +299,9 @@ final class WeatherSearchViewController: UIViewController {
     }
 
     @objc private func searchButtonTapped() {
+        view.endEditing(true)
+
         viewModel.search(city: searchTextField.text ?? "")
     }
+   
 }
