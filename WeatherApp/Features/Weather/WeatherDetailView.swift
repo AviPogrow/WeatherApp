@@ -8,17 +8,9 @@ import SwiftUI
 
 struct WeatherDetailView: View {
 
-    @Environment(\.horizontalSizeClass)
-    private var horizontalSizeClass
-
-    @Environment(\.verticalSizeClass)
-    private var verticalSizeClass
-
     let viewModel: WeatherDetailViewModel
     let imageLoader: ImageLoader
     
-    
-
     var body: some View {
         GeometryReader { proxy in
             let isLandscape = proxy.size.width > proxy.size.height

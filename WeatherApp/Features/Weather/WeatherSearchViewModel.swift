@@ -56,6 +56,7 @@ final class WeatherSearchViewModel {
     }
     
     func requestCurrentLocationWeather() {
+        state = .loading
         locationService.requestCurrentLocation()
     }
     
@@ -130,6 +131,12 @@ final class WeatherSearchViewModel {
             shouldPersist: true
         )
     }
+    
+    // Given more time: hold the in-flight Task and cancel it when a new
+        // search starts. As written, two rapid searches can resolve out of
+        // order and the stale result wins. Low impact at this scale (single
+        // request, fast API), but worth fixing before this pattern is reused
+        // for anything heavier.
     private func fetchWeatherForCity(
         _ city: String,
         shouldPersist: Bool

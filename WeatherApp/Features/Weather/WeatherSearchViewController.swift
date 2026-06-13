@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
+final class WeatherSearchViewController: UIViewController, UITextFieldDelegate, UIGestureRecognizerDelegate {
 
     
     private var currentLocationButtonHeightConstraint: NSLayoutConstraint?
@@ -99,13 +99,14 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         viewModel.requestCurrentLocationWeather()
 
         let tapGesture = UITapGestureRecognizer(
-            target: self,
-            action: #selector(dismissKeyboard)
-        )
+                    target: self,
+                    action: #selector(dismissKeyboard)
+                )
 
-        tapGesture.cancelsTouchesInView = false
+                tapGesture.cancelsTouchesInView = false
+                tapGesture.delegate = self
 
-        view.addGestureRecognizer(tapGesture)
+                view.addGestureRecognizer(tapGesture)
     }
     @objc private func keyboardWillShow(
         notification: Notification
@@ -411,6 +412,12 @@ final class WeatherSearchViewController: UIViewController, UITextFieldDelegate {
         searchButtonTapped()
         return true
     }
+    func gestureRecognizer(
+            _ gestureRecognizer: UIGestureRecognizer,
+            shouldReceive touch: UITouch
+        ) -> Bool {
+            !(touch.view is UITextField)
+        }
     
     @objc private func currentLocationButtonTapped() {
         if viewModel.isLocationPermissionDenied {
