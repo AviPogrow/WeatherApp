@@ -4,6 +4,18 @@ A weather lookup app for the iOS coding challenge. Search any US city or
 use your current location; the app shows current conditions with a
 cached weather icon and a detail screen.
 
+## Highlights
+
+- MVVM-C Architecture
+- UIKit + SwiftUI
+- Async/Await
+- Actor-Based Image Cache
+- Dependency Injection
+- Repository Pattern
+- Core Location
+- Adaptive iPhone + iPad Layouts
+- Unit Testing
+
 ## Running it
 
 1. Open `WeatherApp.xcodeproj` in Xcode 26+
