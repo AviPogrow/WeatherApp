@@ -3,7 +3,9 @@
 A weather lookup app for the iOS coding challenge. Search any US city or
 use your current location; the app shows current conditions with a
 cached weather icon and a detail screen.
+## Visual Summary
 
+![WeatherApp Highlights](WeatherApp/Docs/weather-app-infographic.png)
 ## Highlights
 
 - MVVM-C Architecture
